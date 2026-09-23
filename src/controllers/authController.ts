@@ -55,11 +55,13 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     });
 
     const token = generateToken(user);
+    const expiresIn = process.env.JWT_EXPIRES_IN || '7d';
 
     res.status(201).json({
       success: true,
       message: 'User registered successfully',
       token,
+      expiresIn,
       user
     });
   } catch (error) {
@@ -103,11 +105,13 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     }
 
     const token = generateToken(user);
+    const expiresIn = process.env.JWT_EXPIRES_IN || '7d';
 
     res.status(200).json({
       success: true,
       message: 'Login successful',
       token,
+      expiresIn,
       user
     });
   } catch (error) {
