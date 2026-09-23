@@ -118,6 +118,15 @@ export const createUser = async (req: Request, res: Response): Promise<void> => 
       data: newUser
     });
   } catch (error) {
+    if ((error as any).name === 'ValidationError') {
+      const messages = Object.values((error as any).errors || {}).map((e: any) => e.message).join(', ');
+      res.status(400).json({
+        success: false,
+        message: messages || 'User validation failed',
+        error: (error as Error).message
+      });
+      return;
+    }
     res.status(500).json({
       success: false,
       message: 'Failed to create user',
