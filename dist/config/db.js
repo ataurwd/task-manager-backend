@@ -14,8 +14,14 @@ catch (e) {
     // ignore if restricted
 }
 const connectDB = async () => {
-    const uri = process.env.MONGODB_URI || process.env.MONGO_URI || 'mongodb://127.0.0.1:27017';
-    const dbName = process.env.DB_NAME || 'task_manager_db';
+    const uri = process.env.MONGODB_URI;
+    const dbName = process.env.DB_NAME;
+    if (!uri) {
+        throw new Error('Please provide MONGODB_URI in .env file');
+    }
+    if (!dbName) {
+        throw new Error('Please provide DB_NAME in .env file');
+    }
     try {
         await mongoose_1.default.connect(uri, {
             dbName,
