@@ -1,0 +1,67 @@
+"use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.Post = void 0;
+const mongoose_1 = __importStar(require("mongoose"));
+const postSchema = new mongoose_1.Schema({
+    title: {
+        type: String,
+        required: [true, 'Post title is required'],
+        trim: true,
+        maxlength: [200, 'Title cannot exceed 200 characters']
+    },
+    content: {
+        type: String,
+        required: [true, 'Post content is required'],
+        trim: true
+    },
+    authorId: {
+        type: mongoose_1.Schema.Types.ObjectId,
+        ref: 'User',
+        required: [true, 'Post must have an author']
+    }
+}, {
+    timestamps: true
+});
+// ------------------------------------------------------------------------------------------
+// Explicit Index Definitions (required by task specification: use schema.index method)
+// ------------------------------------------------------------------------------------------
+// 1. Compound index on authorId & createdAt: Strictly supports Aggregation Scenario 2 ($lookup by authorId)
+// and fetching all posts belonging to a specific user ordered chronologically
+postSchema.index({ authorId: 1, createdAt: -1 });
+// 2. Index on createdAt: Supports paginated public listing of all posts visible to everyone
+postSchema.index({ createdAt: -1 });
+exports.Post = mongoose_1.default.model('Post', postSchema);
+exports.default = exports.Post;
