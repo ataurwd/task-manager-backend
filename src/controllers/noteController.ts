@@ -2,9 +2,7 @@ import { Response } from 'express';
 import { AuthenticatedRequest } from '../middleware/auth';
 import Note from '../models/Note';
 
-// @desc    Get paginated notes (Users: own notes; Admins: everyone's notes or filtered)
-// @route   GET /api/notes
-// @access  Private (User / Admin)
+// get notes with pagination (admin can view all or filter; users only see own)
 export const getNotes = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   try {
     const page = Math.max(1, parseInt(req.query.page as string, 10) || 1);
@@ -14,18 +12,13 @@ export const getNotes = async (req: AuthenticatedRequest, res: Response): Promis
     const filter: Record<string, unknown> = {};
 
     if (req.user?.role === 'admin') {
-      // Admin can view everyone's notes or optionally filter by a specific user
       if (req.query.userId) {
         filter.userId = req.query.userId;
       }
     } else {
-      // Regular user can only view their own notes
       filter.userId = req.user?._id;
     }
 
-    // Supported by indexes:
-    // With userId: uses compound index { userId: 1, createdAt: -1 }
-    // Without userId (Admin): uses index { createdAt: -1 }
     const [notes, total] = await Promise.all([
       Note.find(filter)
         .sort({ createdAt: -1 })
@@ -54,15 +47,11 @@ export const getNotes = async (req: AuthenticatedRequest, res: Response): Promis
   }
 };
 
-// @desc    Get single note by ID
-// @route   GET /api/notes/:id
-// @access  Private (User: own note; Admin: any note)
 export const getNoteById = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   try {
     const noteId = req.params.id;
     const query: Record<string, unknown> = { _id: noteId };
 
-    // Regular users can only access their own notes; utilizes compound index { _id: 1, userId: 1 }
     if (req.user?.role !== 'admin') {
       query.userId = req.user?._id;
     }
@@ -71,7 +60,7 @@ export const getNoteById = async (req: AuthenticatedRequest, res: Response): Pro
     if (!note) {
       res.status(404).json({
         success: false,
-        message: 'Note not found or you do not have permission to view it'
+        message: 'Note not found'
       });
       return;
     }
@@ -89,9 +78,6 @@ export const getNoteById = async (req: AuthenticatedRequest, res: Response): Pro
   }
 };
 
-// @desc    Create a new note
-// @route   POST /api/notes
-// @access  Private (User / Admin)
 export const createNote = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   try {
     const { title, content } = req.body;
@@ -126,15 +112,12 @@ export const createNote = async (req: AuthenticatedRequest, res: Response): Prom
   }
 };
 
-// @desc    Update a note (Users & Admins can only edit their own notes)
-// @route   PUT /api/notes/:id
-// @access  Private (Owner only)
+// only author can edit a note (even for admins)
 export const updateNote = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   try {
     const noteId = req.params.id;
     const { title, content } = req.body;
 
-    // First check if note exists
     const existingNote = await Note.findById(noteId);
     if (!existingNote) {
       res.status(404).json({
@@ -144,7 +127,6 @@ export const updateNote = async (req: AuthenticatedRequest, res: Response): Prom
       return;
     }
 
-    // Strict rule: Admin can view all notes, but can ONLY edit their own added notes
     const isOwner = existingNote.userId.toString() === req.user?._id.toString();
     if (!isOwner) {
       res.status(403).json({
@@ -154,7 +136,6 @@ export const updateNote = async (req: AuthenticatedRequest, res: Response): Prom
       return;
     }
 
-    // Supported by index { _id: 1, userId: 1 }
     const updatedNote = await Note.findOneAndUpdate(
       { _id: noteId, userId: req.user?._id },
       { $set: { ...(title && { title }), ...(content && { content }) } },
@@ -175,9 +156,7 @@ export const updateNote = async (req: AuthenticatedRequest, res: Response): Prom
   }
 };
 
-// @desc    Delete a note
-// @route   DELETE /api/notes/:id
-// @access  Private (User: own note; Admin: any note)
+// admins can delete any note; regular users can only delete their own
 export const deleteNote = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   try {
     const noteId = req.params.id;
@@ -191,7 +170,7 @@ export const deleteNote = async (req: AuthenticatedRequest, res: Response): Prom
     if (!deletedNote) {
       res.status(404).json({
         success: false,
-        message: 'Note not found or you do not have permission to delete it'
+        message: 'Note not found'
       });
       return;
     }

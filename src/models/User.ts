@@ -49,20 +49,12 @@ const userSchema = new Schema<IUser>(
   }
 );
 
-// ------------------------------------------------------------------------------------------
-// Explicit Index Definitions (required by task specification: use schema.index method)
-// ------------------------------------------------------------------------------------------
-
-// 1. Unique index on email: Supports fast authentication lookups and guarantees email uniqueness
+// indexes
 userSchema.index({ email: 1 }, { unique: true });
-
-// 2. Multikey index on interests: Specifically supports Aggregation Scenario 1 (group by interests)
 userSchema.index({ interests: 1 });
-
-// 3. Compound index on role & createdAt: Supports Admin user list operations with pagination & sorting
 userSchema.index({ role: 1, createdAt: -1 });
 
-// Pre-save hook for secure password hashing
+// hash password
 userSchema.pre('save', async function (next) {
   if (!this.isModified('password') || !this.password) {
     return next();
@@ -72,13 +64,12 @@ userSchema.pre('save', async function (next) {
   next();
 });
 
-// Method to verify password on login
 userSchema.methods.comparePassword = async function (candidatePassword: string): Promise<boolean> {
   if (!this.password) return false;
   return bcrypt.compare(candidatePassword, this.password);
 };
 
-// Transform to remove sensitive information on JSON serialization
+// strip password & __v on response
 userSchema.methods.toJSON = function () {
   const userObject = this.toObject();
   delete userObject.password;

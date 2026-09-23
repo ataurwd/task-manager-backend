@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.disconnectDB = exports.connectDB = void 0;
 const dns_1 = __importDefault(require("dns"));
 const mongoose_1 = __importDefault(require("mongoose"));
-// Ensure public DNS resolvers are used to resolve MongoDB Atlas SRV records
+// Atlas SRV dns fix
 try {
     dns_1.default.setServers(['8.8.8.8', '1.1.1.1']);
 }

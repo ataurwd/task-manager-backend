@@ -1,11 +1,7 @@
 import https from 'https';
 import http from 'http';
 
-/**
- * Render Free Tier Keep-Alive Utility
- * Render free tier spins down web services after 15 minutes of inactivity.
- * This utility pings the service's own /health endpoint every 10 minutes while active.
- */
+// ping /health every 10 mins to prevent Render spin-down
 export const initKeepAlive = (): void => {
   const url = process.env.RENDER_EXTERNAL_URL || process.env.SERVER_URL;
 

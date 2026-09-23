@@ -18,7 +18,6 @@ const authenticate = async (req, res, next) => {
         }
         const token = authHeader.split(' ')[1];
         const decoded = jsonwebtoken_1.default.verify(token, process.env.JWT_SECRET || 'secretkey');
-        // Direct indexed lookup on _id (MongoDB default index)
         const user = await User_1.default.findById(decoded.id);
         if (!user) {
             res.status(401).json({

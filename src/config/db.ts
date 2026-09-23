@@ -1,7 +1,7 @@
 import dns from 'dns';
 import mongoose from 'mongoose';
 
-// Ensure public DNS resolvers are used to resolve MongoDB Atlas SRV records
+// Atlas SRV dns fix
 try {
   dns.setServers(['8.8.8.8', '1.1.1.1']);
 } catch (e) {

@@ -2,16 +2,12 @@ import { Request, Response } from 'express';
 import { AuthenticatedRequest } from '../middleware/auth';
 import Post from '../models/Post';
 
-// @desc    Get all public posts with pagination
-// @route   GET /api/posts
-// @access  Public
 export const getPosts = async (req: Request, res: Response): Promise<void> => {
   try {
     const page = Math.max(1, parseInt(req.query.page as string, 10) || 1);
     const limit = Math.max(1, Math.min(100, parseInt(req.query.limit as string, 10) || 10));
     const skip = (page - 1) * limit;
 
-    // Supported by index { createdAt: -1 }
     const [posts, total] = await Promise.all([
       Post.find()
         .sort({ createdAt: -1 })
@@ -40,9 +36,6 @@ export const getPosts = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
-// @desc    Get single post by ID
-// @route   GET /api/posts/:id
-// @access  Public
 export const getPostById = async (req: Request, res: Response): Promise<void> => {
   try {
     const post = await Post.findById(req.params.id).populate('authorId', 'name email role');
@@ -67,9 +60,6 @@ export const getPostById = async (req: Request, res: Response): Promise<void> =>
   }
 };
 
-// @desc    Create a post
-// @route   POST /api/posts
-// @access  Private (User / Admin)
 export const createPost = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   try {
     const { title, content } = req.body;

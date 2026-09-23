@@ -27,7 +27,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    // Check existing email using unique index on email
+    // check if user already exists
     const existingUser = await User.findOne({ email: email.toLowerCase().trim() });
     if (existingUser) {
       res.status(409).json({
@@ -85,7 +85,6 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    // Direct indexed query on email with +password
     const user = await User.findOne({ email: email.toLowerCase().trim() }).select('+password');
     if (!user) {
       res.status(401).json({

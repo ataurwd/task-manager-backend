@@ -5,15 +5,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createPost = exports.getPostById = exports.getPosts = void 0;
 const Post_1 = __importDefault(require("../models/Post"));
-// @desc    Get all public posts with pagination
-// @route   GET /api/posts
-// @access  Public
 const getPosts = async (req, res) => {
     try {
         const page = Math.max(1, parseInt(req.query.page, 10) || 1);
         const limit = Math.max(1, Math.min(100, parseInt(req.query.limit, 10) || 10));
         const skip = (page - 1) * limit;
-        // Supported by index { createdAt: -1 }
         const [posts, total] = await Promise.all([
             Post_1.default.find()
                 .sort({ createdAt: -1 })
@@ -42,9 +38,6 @@ const getPosts = async (req, res) => {
     }
 };
 exports.getPosts = getPosts;
-// @desc    Get single post by ID
-// @route   GET /api/posts/:id
-// @access  Public
 const getPostById = async (req, res) => {
     try {
         const post = await Post_1.default.findById(req.params.id).populate('authorId', 'name email role');
@@ -69,9 +62,6 @@ const getPostById = async (req, res) => {
     }
 };
 exports.getPostById = getPostById;
-// @desc    Create a post
-// @route   POST /api/posts
-// @access  Private (User / Admin)
 const createPost = async (req, res) => {
     try {
         const { title, content } = req.body;

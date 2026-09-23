@@ -32,7 +32,6 @@ export const authenticate = async (
       process.env.JWT_SECRET || 'secretkey'
     ) as JwtPayload;
 
-    // Direct indexed lookup on _id (MongoDB default index)
     const user = await User.findById(decoded.id);
     if (!user) {
       res.status(401).json({

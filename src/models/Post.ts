@@ -33,15 +33,8 @@ const postSchema = new Schema<IPost>(
   }
 );
 
-// ------------------------------------------------------------------------------------------
-// Explicit Index Definitions (required by task specification: use schema.index method)
-// ------------------------------------------------------------------------------------------
-
-// 1. Compound index on authorId & createdAt: Strictly supports Aggregation Scenario 2 ($lookup by authorId)
-// and fetching all posts belonging to a specific user ordered chronologically
+// indexes
 postSchema.index({ authorId: 1, createdAt: -1 });
-
-// 2. Index on createdAt: Supports paginated public listing of all posts visible to everyone
 postSchema.index({ createdAt: -1 });
 
 export const Post: Model<IPost> = mongoose.model<IPost>('Post', postSchema);

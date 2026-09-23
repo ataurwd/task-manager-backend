@@ -7,9 +7,6 @@ exports.deleteUser = exports.updateUser = exports.createUser = exports.getUserBy
 const User_1 = __importDefault(require("../models/User"));
 const Note_1 = __importDefault(require("../models/Note"));
 const Post_1 = __importDefault(require("../models/Post"));
-// @desc    List all users with pagination (Admin only)
-// @route   GET /api/admin/users
-// @access  Private (Admin)
 const listUsers = async (req, res) => {
     try {
         const page = Math.max(1, parseInt(req.query.page, 10) || 1);
@@ -19,7 +16,6 @@ const listUsers = async (req, res) => {
         if (req.query.role && (req.query.role === 'admin' || req.query.role === 'user')) {
             filter.role = req.query.role;
         }
-        // Supported by compound index { role: 1, createdAt: -1 }
         const [users, total] = await Promise.all([
             User_1.default.find(filter)
                 .sort({ createdAt: -1 })
@@ -48,9 +44,6 @@ const listUsers = async (req, res) => {
     }
 };
 exports.listUsers = listUsers;
-// @desc    Get single user details by ID
-// @route   GET /api/admin/users/:id
-// @access  Private (Admin)
 const getUserById = async (req, res) => {
     try {
         const user = await User_1.default.findById(req.params.id).select('-password');
@@ -75,9 +68,6 @@ const getUserById = async (req, res) => {
     }
 };
 exports.getUserById = getUserById;
-// @desc    Create/Add a new user (Admin only)
-// @route   POST /api/admin/users
-// @access  Private (Admin)
 const createUser = async (req, res) => {
     try {
         const { name, email, password, role, interests } = req.body;
@@ -134,9 +124,6 @@ const createUser = async (req, res) => {
     }
 };
 exports.createUser = createUser;
-// @desc    Update user details (Admin only)
-// @route   PUT /api/admin/users/:id
-// @access  Private (Admin)
 const updateUser = async (req, res) => {
     try {
         const { name, email, role, interests } = req.body;
@@ -178,9 +165,6 @@ const updateUser = async (req, res) => {
     }
 };
 exports.updateUser = updateUser;
-// @desc    Delete user (Admin only)
-// @route   DELETE /api/admin/users/:id
-// @access  Private (Admin)
 const deleteUser = async (req, res) => {
     try {
         const userId = req.params.id;
@@ -192,7 +176,7 @@ const deleteUser = async (req, res) => {
             });
             return;
         }
-        // Cascade delete associated user's notes and posts
+        // cascade delete user's notes and posts
         await Promise.all([
             Note_1.default.deleteMany({ userId }),
             Post_1.default.deleteMany({ authorId: userId })

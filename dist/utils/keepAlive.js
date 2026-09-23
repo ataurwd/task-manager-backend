@@ -6,11 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.initKeepAlive = void 0;
 const https_1 = __importDefault(require("https"));
 const http_1 = __importDefault(require("http"));
-/**
- * Render Free Tier Keep-Alive Utility
- * Render free tier spins down web services after 15 minutes of inactivity.
- * This utility pings the service's own /health endpoint every 10 minutes while active.
- */
+// ping /health every 10 mins to prevent Render spin-down
 const initKeepAlive = () => {
     const url = process.env.RENDER_EXTERNAL_URL || process.env.SERVER_URL;
     if (!url) {
