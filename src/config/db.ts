@@ -7,13 +7,13 @@ export const connectDB = async (): Promise<void> => {
   try {
     await mongoose.connect(uri, {
       dbName,
+      serverSelectionTimeoutMS: 3000,
       autoIndex: true
     });
     console.log(`[Database] MongoDB connected successfully to database: "${dbName}" on host: ${mongoose.connection.host}`);
   } catch (error) {
     console.error(`[Database] Failed to connect to MongoDB at ${uri}:`, (error as Error).message);
     console.info('[Database] Please verify that your MongoDB service is running or check your MONGODB_URI in .env');
-    // In dev, avoid crashing the process so that health checks or endpoints can still provide meaningful responses
     if (process.env.NODE_ENV === 'production') {
       process.exit(1);
     }

@@ -29,7 +29,7 @@ export const authenticate = async (
     const token = authHeader.split(' ')[1];
     const decoded = jwt.verify(
       token,
-      process.env.JWT_SECRET || 'super_secret_jwt_key_interview_2026'
+      process.env.JWT_SECRET || 'secretkey'
     ) as JwtPayload;
 
     // Direct indexed lookup on _id (MongoDB default index)
