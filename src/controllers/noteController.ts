@@ -126,33 +126,40 @@ export const createNote = async (req: AuthenticatedRequest, res: Response): Prom
   }
 };
 
-// @desc    Update a note
+// @desc    Update a note (Users & Admins can only edit their own notes)
 // @route   PUT /api/notes/:id
-// @access  Private (User: own note; Admin: any note)
+// @access  Private (Owner only)
 export const updateNote = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   try {
     const noteId = req.params.id;
     const { title, content } = req.body;
 
-    const query: Record<string, unknown> = { _id: noteId };
-    if (req.user?.role !== 'admin') {
-      query.userId = req.user?._id;
-    }
-
-    // Supported by index { _id: 1, userId: 1 } for user, {_id: 1} for admin
-    const updatedNote = await Note.findOneAndUpdate(
-      query,
-      { $set: { ...(title && { title }), ...(content && { content }) } },
-      { new: true, runValidators: true }
-    ).populate('userId', 'name email role');
-
-    if (!updatedNote) {
+    // First check if note exists
+    const existingNote = await Note.findById(noteId);
+    if (!existingNote) {
       res.status(404).json({
         success: false,
-        message: 'Note not found or you do not have permission to update it'
+        message: 'Note not found'
       });
       return;
     }
+
+    // Strict rule: Admin can view all notes, but can ONLY edit their own added notes
+    const isOwner = existingNote.userId.toString() === req.user?._id.toString();
+    if (!isOwner) {
+      res.status(403).json({
+        success: false,
+        message: 'Forbidden: You can only edit notes that you have added yourself'
+      });
+      return;
+    }
+
+    // Supported by index { _id: 1, userId: 1 }
+    const updatedNote = await Note.findOneAndUpdate(
+      { _id: noteId, userId: req.user?._id },
+      { $set: { ...(title && { title }), ...(content && { content }) } },
+      { new: true, runValidators: true }
+    ).populate('userId', 'name email role');
 
     res.status(200).json({
       success: true,
