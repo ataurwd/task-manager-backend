@@ -9,7 +9,7 @@ try {
 }
 
 export const connectDB = async (): Promise<void> => {
-  const uri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017';
+  const uri = process.env.MONGODB_URI || process.env.MONGO_URI || 'mongodb://127.0.0.1:27017';
   const dbName = process.env.DB_NAME || 'task_manager_db';
 
   try {
